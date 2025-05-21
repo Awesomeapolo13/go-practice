@@ -20,44 +20,55 @@ func main() {
 }
 
 func getUserInput() (float64, string, string) {
-	var moneyAmount float64
-	var initialCurrency, targetCurrency, msg string
+	initialCurrency := getInitialCurrencyInput()
+	moneyAmount := getAmountInout()
+	targetCurrency := getTargetCurrencyInput(initialCurrency)
 
+	return moneyAmount, initialCurrency, targetCurrency
+}
+
+func getInitialCurrencyInput() string {
+	var initialCurrency, msg string
 	for {
 		fmt.Print("Set a currency you want to convert from (USD, EUR, RUB are allowed): ")
 		fmt.Scan(&initialCurrency)
 
 		if isValidInitialCurrency(initialCurrency) {
-			break
+			return initialCurrency
 		}
+
 		msg = fmt.Sprintf("The currency %s is not allowed. Try again.", initialCurrency)
 		fmt.Println(msg)
 	}
+}
 
+func getAmountInout() float64 {
+	var moneyAmount float64
 	for {
 		fmt.Print("Set an amount of money you want to convert (positive number more than 0): ")
 		fmt.Scan(&moneyAmount)
 
 		if isValidAmount(moneyAmount) {
-			break
+			return moneyAmount
 		}
 
 		fmt.Println("The amount is not allowed. Try again.")
 	}
+}
 
+func getTargetCurrencyInput(initialCurrency string) string {
+	var targetCurrency, msg string
 	for {
 		fmt.Print("Set a currency you want to convert to (Use USD, EUR, RUB except already used on the first step): ")
 		fmt.Scan(&targetCurrency)
 
 		if isValidTargetCurrency(targetCurrency, initialCurrency) {
-			break
+			return targetCurrency
 		}
 
 		msg = fmt.Sprintf("The currency %s is not allowed. Try again.", targetCurrency)
 		fmt.Println(msg)
 	}
-
-	return moneyAmount, initialCurrency, targetCurrency
 }
 
 func convertAmount(amount float64, initialCurrency string, targetCurrency string) float64 {
@@ -70,19 +81,21 @@ func resolveExchangeRate(initialCurrency string, targetCurrency string) float64 
 	rubToUsd := 1 / usdToRub
 	rubToEur := usdToEur / usdToRub
 
-	switch {
-	case initialCurrency == EUR && targetCurrency == USD:
+	switch initialCurrency + ":" + targetCurrency {
+	case EUR + ":" + USD:
 		return eurToUsd
-	case initialCurrency == USD && targetCurrency == EUR:
+	case USD + ":" + EUR:
 		return usdToEur
-	case initialCurrency == RUB && targetCurrency == USD:
+	case RUB + ":" + USD:
 		return rubToUsd
-	case initialCurrency == USD && targetCurrency == RUB:
+	case USD + ":" + RUB:
 		return usdToRub
-	case initialCurrency == RUB && targetCurrency == EUR:
+	case RUB + ":" + EUR:
 		return rubToEur
-	default:
+	case EUR + ":" + RUB:
 		return eurToRub
+	default:
+		return 1
 	}
 }
 
