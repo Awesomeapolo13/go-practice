@@ -5,6 +5,7 @@ import "fmt"
 const USD, EUR, RUB = "USD", "EUR", "RUB"
 const usdToEur, usdToRub = 0.9, 81.07
 
+// Вместо свича использовать мап из валюты
 func main() {
 	fmt.Println("__Welcome to the currency converter__")
 
@@ -80,23 +81,22 @@ func resolveExchangeRate(initialCurrency string, targetCurrency string) float64 
 	eurToUsd := 1 / usdToEur
 	rubToUsd := 1 / usdToRub
 	rubToEur := usdToEur / usdToRub
+	exchanges := map[string]float64{
+		EUR + ":" + USD: eurToUsd,
+		USD + ":" + EUR: usdToEur,
+		RUB + ":" + USD: rubToUsd,
+		USD + ":" + RUB: usdToRub,
+		RUB + ":" + EUR: rubToEur,
+		EUR + ":" + RUB: eurToRub,
+	}
 
-	switch initialCurrency + ":" + targetCurrency {
-	case EUR + ":" + USD:
-		return eurToUsd
-	case USD + ":" + EUR:
-		return usdToEur
-	case RUB + ":" + USD:
-		return rubToUsd
-	case USD + ":" + RUB:
-		return usdToRub
-	case RUB + ":" + EUR:
-		return rubToEur
-	case EUR + ":" + RUB:
-		return eurToRub
-	default:
+	exchangeRate := exchanges[initialCurrency+":"+targetCurrency]
+
+	if exchangeRate <= 0 {
 		return 1
 	}
+
+	return exchangeRate
 }
 
 func isValidInitialCurrency(initialCurrency string) bool {
