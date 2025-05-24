@@ -3,15 +3,16 @@ package main
 import (
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 const AVG, SUM, MED = "AVG", "SUM", "MED"
 
 func main() {
-	// Принимаем строку из чисел через запятую ("2,3,10,-6"), их нужно разбить по запятой, удалить лищние пробелы
-	// В итоге получаем слайс с числами, которые были переданы через запятую
-	operation, integers := getUserInput()
-	fmt.Println(operation, integers)
+	operation, integersStr := getUserInput()
+	integers := splitInput(integersStr)
+
+	fmt.Println(operation, integersStr, integers)
 }
 
 func getUserInput() (string, string) {
@@ -63,4 +64,8 @@ func getIntegersInput() string {
 	}
 
 	return integers
+}
+
+func splitInput(str string) []string {
+	return strings.Split(str, ", ")
 }
