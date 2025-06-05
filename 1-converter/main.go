@@ -5,6 +5,8 @@ import "fmt"
 const USD, EUR, RUB = "USD", "EUR", "RUB"
 const usdToEur, usdToRub = 0.9, 81.07
 
+type exchanges = map[string]float64
+
 // Вместо свича использовать мап из валюты
 func main() {
 	fmt.Println("__Welcome to the currency converter__")
@@ -14,7 +16,9 @@ func main() {
 	msg := fmt.Sprintf("You want to convert %.0f %s to %s", moneyAmount, initialCurrency, targetCurrency)
 	fmt.Println(msg)
 
-	result := convertAmount(moneyAmount, initialCurrency, targetCurrency)
+	exchangesMap := getExchanges()
+
+	result := convertAmount(moneyAmount, initialCurrency, targetCurrency, exchangesMap)
 
 	msg = fmt.Sprintf("Result is %.2f %s", result, targetCurrency)
 	fmt.Println(msg)
@@ -72,16 +76,17 @@ func getTargetCurrencyInput(initialCurrency string) string {
 	}
 }
 
-func convertAmount(amount float64, initialCurrency string, targetCurrency string) float64 {
-	return amount * resolveExchangeRate(initialCurrency, targetCurrency)
+func convertAmount(amount float64, initialCurrency string, targetCurrency string, exchangesMap exchanges) float64 {
+	return amount * resolveExchangeRate(initialCurrency, targetCurrency, exchangesMap)
 }
 
-func resolveExchangeRate(initialCurrency string, targetCurrency string) float64 {
+func getExchanges() exchanges {
 	eurToRub := usdToRub / usdToEur
 	eurToUsd := 1 / usdToEur
 	rubToUsd := 1 / usdToRub
 	rubToEur := usdToEur / usdToRub
-	exchanges := map[string]float64{
+
+	return map[string]float64{
 		EUR + ":" + USD: eurToUsd,
 		USD + ":" + EUR: usdToEur,
 		RUB + ":" + USD: rubToUsd,
@@ -89,8 +94,10 @@ func resolveExchangeRate(initialCurrency string, targetCurrency string) float64 
 		RUB + ":" + EUR: rubToEur,
 		EUR + ":" + RUB: eurToRub,
 	}
+}
 
-	exchangeRate := exchanges[initialCurrency+":"+targetCurrency]
+func resolveExchangeRate(initialCurrency string, targetCurrency string, exchangesMap exchanges) float64 {
+	exchangeRate := exchangesMap[initialCurrency+":"+targetCurrency]
 
 	if exchangeRate <= 0 {
 		return 1
