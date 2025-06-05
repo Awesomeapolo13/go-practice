@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -10,9 +11,21 @@ const AVG, SUM, MED = "AVG", "SUM", "MED"
 
 func main() {
 	operation, integersStr := getUserInput()
-	integers := splitInput(integersStr)
-
+	var integers *[]float64
+	splitted := splitInput(integersStr)
+	integers = &splitted
 	fmt.Println(operation, integersStr, integers)
+
+	operations := map[string]float64{
+		AVG: calcAVG(integers),
+		SUM: calcSUM(integers),
+		MED: calcMED(integers),
+	}
+
+	result := operations[operation]
+	msg := fmt.Sprintf("The result of %s operation with integers %.2f is %.2f", operation, integers, result)
+
+	fmt.Println(msg)
 }
 
 func getUserInput() (string, string) {
@@ -66,6 +79,50 @@ func getIntegersInput() string {
 	return integers
 }
 
-func splitInput(str string) []string {
-	return strings.Split(str, ", ")
+func splitInput(str string) []float64 {
+	split := strings.Split(str, ", ")
+	integers := make([]float64, len(split))
+	for idx, val := range split {
+		converted, err := strconv.ParseFloat(val, 64)
+		if err != nil {
+			fmt.Println("Error while converting ", val, " to float. Try again.")
+			panic(err)
+		}
+
+		integers[idx] = converted
+	}
+
+	return integers
+}
+
+func calcSUM(nums *[]float64) float64 {
+	sum := 0.0
+	for _, num := range *nums {
+		sum += num
+	}
+
+	return sum
+}
+
+func calcAVG(nums *[]float64) float64 {
+	elemCount := len(*nums)
+	sum := calcSUM(nums)
+
+	return sum / float64(elemCount)
+}
+
+func calcMED(nums *[]float64) float64 {
+	sort.Float64s(*nums)
+	fmt.Println(*nums)
+	length := len(*nums)
+	halfIdx := length / 2
+
+	if length%2 != 0 {
+		fmt.Println(halfIdx)
+		return (*nums)[halfIdx]
+	}
+
+	fmt.Println(halfIdx)
+
+	return ((*nums)[halfIdx] + (*nums)[halfIdx-1]) / 2
 }
