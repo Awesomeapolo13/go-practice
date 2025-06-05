@@ -10,21 +10,15 @@ import (
 const AVG, SUM, MED = "AVG", "SUM", "MED"
 
 func main() {
-	operation, integersStr := getUserInput()
 	var integers *[]float64
+	var result float64
+	operation, integersStr := getUserInput()
 	splitted := splitInput(integersStr)
 	integers = &splitted
-	fmt.Println(operation, integersStr, integers)
 
-	operations := map[string]float64{
-		AVG: calcAVG(integers),
-		SUM: calcSUM(integers),
-		MED: calcMED(integers),
-	}
+	result = calculate(operation, integers)
 
-	result := operations[operation]
-	msg := fmt.Sprintf("The result of %s operation with integers %.2f is %.2f", operation, integers, result)
-
+	msg := fmt.Sprintf("The result of %s operation with integers %.2f is %.2f", operation, *integers, result)
 	fmt.Println(msg)
 }
 
@@ -95,6 +89,19 @@ func splitInput(str string) []float64 {
 	return integers
 }
 
+func calculate(operation string, integers *[]float64) float64 {
+	switch operation {
+	case AVG:
+		return calcAVG(integers)
+	case SUM:
+		return calcSUM(integers)
+	case MED:
+		return calcMED(integers)
+	default:
+		panic("Unsupported operation")
+	}
+}
+
 func calcSUM(nums *[]float64) float64 {
 	sum := 0.0
 	for _, num := range *nums {
@@ -118,11 +125,8 @@ func calcMED(nums *[]float64) float64 {
 	halfIdx := length / 2
 
 	if length%2 != 0 {
-		fmt.Println(halfIdx)
 		return (*nums)[halfIdx]
 	}
-
-	fmt.Println(halfIdx)
 
 	return ((*nums)[halfIdx] + (*nums)[halfIdx-1]) / 2
 }
