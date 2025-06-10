@@ -1,10 +1,12 @@
 package file
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 )
+
+const allowedExtension = ".json"
 
 func ReadFile(name string) ([]byte, error) {
 	data, err := os.ReadFile(name)
@@ -17,26 +19,24 @@ func ReadFile(name string) ([]byte, error) {
 }
 
 func IsJSON(fileName string) bool {
-	var js map[string]interface{}
-
-	return json.Unmarshal([]byte(fileName), &js) == nil
+	return strings.Contains(fileName, allowedExtension)
 }
 
-func WriteFile(content []byte, name string) {
+func WriteFile(content []byte, name string) error {
 	if !IsJSON(name) {
 		fmt.Println(name + " not json file")
 	}
 
 	file, err := os.Create(name)
 	if err != nil {
-		fmt.Println(err)
+		return err
 	}
 	defer file.Close()
 
 	_, err = file.Write(content)
 	if err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
 	fmt.Println("Wrote successfully")
+	return nil
 }

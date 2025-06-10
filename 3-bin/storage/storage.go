@@ -49,7 +49,10 @@ func (storage *Storage) AddBin(bin bins.Bin) {
 	if err != nil {
 		fmt.Println("Could not marshal " + storageFileName)
 	}
-	file.WriteFile(data, storageFileName)
+	err = file.WriteFile(data, storageFileName)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 }
 
 func (storage *Storage) FindAllBins() *bins.BinList {
