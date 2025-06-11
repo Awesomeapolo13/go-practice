@@ -1,8 +1,8 @@
 package storage
 
 import (
-	"3_bin/bins"
-	"3_bin/file"
+	"bin/bins"
+	"bin/file"
 	"encoding/json"
 	"fmt"
 	"time"
