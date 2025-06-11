@@ -19,7 +19,7 @@ func ReadFile(name string) ([]byte, error) {
 }
 
 func IsJSON(fileName string) bool {
-	return strings.Contains(fileName, allowedExtension)
+	return strings.HasSuffix(fileName, allowedExtension)
 }
 
 func WriteFile(content []byte, name string) error {
