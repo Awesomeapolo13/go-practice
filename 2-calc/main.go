@@ -9,6 +9,12 @@ import (
 
 const AVG, SUM, MED = "AVG", "SUM", "MED"
 
+var calcMap = map[string]func(*[]float64) float64{
+	AVG: calcAVG,
+	SUM: calcSUM,
+	MED: calcMED,
+}
+
 func main() {
 	var integers *[]float64
 	var result float64
@@ -90,16 +96,12 @@ func splitInput(str string) []float64 {
 }
 
 func calculate(operation string, integers *[]float64) float64 {
-	switch operation {
-	case AVG:
-		return calcAVG(integers)
-	case SUM:
-		return calcSUM(integers)
-	case MED:
-		return calcMED(integers)
-	default:
+	calcFunc := calcMap[operation]
+	if calcFunc == nil {
 		panic("Unsupported operation")
 	}
+
+	return calcFunc(integers)
 }
 
 func calcSUM(nums *[]float64) float64 {
