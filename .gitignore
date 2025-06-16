@@ -2,3 +2,5 @@
 practice
 data.json
 file.txt
+.env*
+*.vault
