@@ -2,16 +2,27 @@ package api
 
 import (
 	"bin/bins"
-	"bin/config"
 )
 
-type API struct {
-	config config.Config
+type ConfigInterface interface {
+	GetKey() string
 }
 
-func NewAPI(config config.Config) *API {
+type StorageInterface interface {
+	AddBin(bin bins.Bin)
+	FindAllBins() *bins.BinList
+	ToByteSlice() ([]byte, error)
+}
+
+type API struct {
+	config  ConfigInterface
+	storage StorageInterface
+}
+
+func NewAPI(config ConfigInterface, storage StorageInterface) *API {
 	return &API{
-		config: config,
+		config:  config,
+		storage: storage,
 	}
 }
 

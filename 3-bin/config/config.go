@@ -3,7 +3,7 @@ package config
 import "os"
 
 type Config struct {
-	Key string
+	key string
 }
 
 func NewConfig() *Config {
@@ -13,6 +13,10 @@ func NewConfig() *Config {
 	}
 
 	return &Config{
-		Key: key,
+		key: key,
 	}
+}
+
+func (c *Config) GetKey() string {
+	return c.key
 }
