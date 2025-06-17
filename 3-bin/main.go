@@ -2,6 +2,8 @@ package main
 
 import (
 	"bin/bins"
+	"fmt"
+	"github.com/joho/godotenv"
 )
 
 type StorageInterface interface {
@@ -11,5 +13,8 @@ type StorageInterface interface {
 }
 
 func main() {
-
+	err := godotenv.Load()
+	if err != nil {
+		fmt.Println("Could not load .env file")
+	}
 }
