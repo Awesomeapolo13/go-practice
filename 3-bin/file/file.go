@@ -8,7 +8,13 @@ import (
 
 const allowedExtension = ".json"
 
-func ReadFile(name string) ([]byte, error) {
+type File struct{}
+
+func NewFile() *File {
+	return &File{}
+}
+
+func (fileSrv *File) ReadFile(name string) ([]byte, error) {
 	data, err := os.ReadFile(name)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -18,12 +24,12 @@ func ReadFile(name string) ([]byte, error) {
 	return data, nil
 }
 
-func IsJSON(fileName string) bool {
+func (fileSrv *File) IsJSON(fileName string) bool {
 	return strings.HasSuffix(fileName, allowedExtension)
 }
 
-func WriteFile(content []byte, name string) error {
-	if !IsJSON(name) {
+func (fileSrv *File) WriteFile(content []byte, name string) error {
+	if !fileSrv.IsJSON(name) {
 		fmt.Println(name + " not json file")
 	}
 
