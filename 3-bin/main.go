@@ -1,7 +1,11 @@
 package main
 
 import (
+	binApi "bin/api"
 	"bin/bins"
+	appConfig "bin/config"
+	"bin/file"
+	"bin/storage"
 	"fmt"
 	"github.com/joho/godotenv"
 )
@@ -17,4 +21,9 @@ func main() {
 	if err != nil {
 		fmt.Println("Could not load .env file")
 	}
+	appConfig := appConfig.NewConfig()
+	api := binApi.NewAPI(*appConfig)
+	fileSrv := file.NewFile()
+	storage.NewStorage(fileSrv)
+	fmt.Println(api)
 }
