@@ -3,20 +3,31 @@ package config
 import "os"
 
 type Config struct {
-	key string
+	accessKey string
+	masterKey string
 }
 
 func NewConfig() *Config {
-	key := os.Getenv("KEY")
-	if key == "" {
-		panic("KEY environment variable is not set")
+	accessKey := os.Getenv("ACCESS_KEY")
+	if accessKey == "" {
+		panic("ACCESS_KEY environment variable is not set")
+	}
+
+	masterKey := os.Getenv("MASTER_KEY")
+	if masterKey == "" {
+		panic("MASTER_KEY environment variable is not set")
 	}
 
 	return &Config{
-		key: key,
+		accessKey: accessKey,
+		masterKey: masterKey,
 	}
 }
 
-func (c *Config) GetKey() string {
-	return c.key
+func (c *Config) GetAccessKey() string {
+	return c.accessKey
+}
+
+func (c *Config) GetMasterKey() string {
+	return c.masterKey
 }
