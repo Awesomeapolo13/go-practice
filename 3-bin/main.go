@@ -59,13 +59,6 @@ func main() {
 	default:
 		panic("Unsupported operation. Please use create, update, delete, get or list")
 	}
-
-	appConfig := appConfig.NewConfig()
-	fileSrv := file.NewFile()
-	storageDb := storage.NewStorage(fileSrv)
-	api := binApi.NewAPI(appConfig, storageDb)
-	fmt.Println(api)
-
 }
 
 func createBin(binsFile, binsName string) {
@@ -80,18 +73,38 @@ func createBin(binsFile, binsName string) {
 	api := binApi.NewAPI(appConfig, storageDb)
 	bin, err := api.CreateBin(binsName, data)
 	if err != nil {
-		return
+		panic(err)
 	}
 	msg := fmt.Sprintf("Bin with name %s successfully created with ID %s", bin.Name, bin.Id)
 	fmt.Println(msg)
 }
 
 func updateBin(binsFile, binsId string) {
-	// Находим такой бин в локальном хранилище, если его нет то ошибка
-	// Отправляем запрос в API.
+	if binsFile == "" || binsId == "" {
+		panic("Please specify bins file and id")
+	}
+	//appConfig := appConfig.NewConfig()
+	storageDb := storage.NewStorage(file.NewFile())
+	//api := binApi.NewAPI(appConfig, storageDb)
+	binToUpdate, err := storageDb.FindBinById(binsId)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Updating bin", binToUpdate.Name)
+	data := extractAndCheckData("./data/" + binsFile)
+
+	appConfig := appConfig.NewConfig()
+	api := binApi.NewAPI(appConfig, storageDb)
+	err = api.UpdateBin(binToUpdate.Id, data)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func deleteBin(binsId string) {
+	if binsId == "" {
+		panic("Please specify bins id")
+	}
 	// Находим такой бин в локальном хранилище, если его нет то ошибка
 	// Отправляем запрос в API.
 	// Удаляем бин из локального хранилища
