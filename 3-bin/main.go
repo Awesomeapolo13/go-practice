@@ -111,6 +111,9 @@ func deleteBin(binsId string) {
 }
 
 func getBin(binsId string) {
+	if binsId == "" {
+		panic("Please specify bins id")
+	}
 	// Находим такой бин в локальном хранилище, если его нет то ошибка
 	// Получаем бин из API.
 	// Выводим результат в консоль
