@@ -3,6 +3,7 @@ package storage
 import (
 	"bin/bins"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 )
@@ -76,6 +77,17 @@ func (storage *StorageWithDI) AddBin(bin bins.Bin) {
 
 func (storage *StorageWithDI) FindAllBins() *bins.BinList {
 	return storage.Storage.Bins
+}
+
+func (storage *StorageWithDI) FindBinById(id string) (*bins.Bin, error) {
+	binList := storage.FindAllBins()
+	for _, bin := range binList.Bins {
+		if bin.Id == id {
+			return &bin, nil
+		}
+	}
+
+	return nil, errors.New("Could not find a bin with id " + id)
 }
 
 func (storage *StorageWithDI) ToByteSlice() ([]byte, error) {
