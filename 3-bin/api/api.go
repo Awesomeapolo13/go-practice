@@ -117,19 +117,6 @@ func (api *API) DeleteBin(binId string) error {
 	return nil
 }
 
-func (api *API) LoadToCloud(bins bins.BinList) {
-	// Пока что заглушка
-}
-
-func (api *API) LoadFromCloud() bins.BinList {
-	// Пока что заглушка
-	return bins.BinList{}
-}
-
-func (api *API) addToStorage(bins.Bin) {
-
-}
-
 func (api *API) prepareRequest(url, method string, data []byte) (*http.Request, error) {
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(data))
 	if err != nil {

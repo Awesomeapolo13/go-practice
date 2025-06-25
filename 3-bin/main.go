@@ -11,18 +11,6 @@ import (
 )
 
 func main() {
-	// Зарегаться на https://jsonbin.io/ (это облачное хранилище json)
-	// Реализовать методы для работы с апи, использовать в бин апи методы create a BIN, update BIN, delete BIN, read BIN
-	// Бины доступны в папке бинс облачного сервиса
-	// Создание бина post, чтение get, обновление put
-	// Команда должна читать флаги, для create -
-	//    --file - адрес файла, который хотим отправить в jsonBin (какой то локальный файл),
-	//    --name - название бина (видимо для внутреннего пользования)
-	// должен локально сохранить имя и идентификатор из ответа, чтобы о них осталась инфа
-	// update - --file - см.выше, --id - идешка бина
-	// delete - --id
-	// --get --id
-	// list - получить и вывести все сохраненные идентификаторы и имена
 	err := godotenv.Load()
 	if err != nil {
 		fmt.Println("Could not load .env file")
@@ -154,8 +142,18 @@ func getBin(binsId string) {
 }
 
 func getBinList() {
-	// Берем весь список из локального хранилища.
-	// Выводим в консоль
+	storageDb := storage.NewStorage(file.NewFile())
+	binsList := storageDb.FindAllBins()
+
+	if len(binsList.Bins) == 0 {
+		fmt.Println("Bin's list is empty. Create a new bin to fill it.")
+	}
+	fmt.Println("==========================")
+	for _, bin := range binsList.Bins {
+		fmt.Println(bin.Id)
+		fmt.Println(bin.Name)
+		fmt.Println("==========================")
+	}
 }
 
 func extractAndCheckData(fileName string) []byte {
