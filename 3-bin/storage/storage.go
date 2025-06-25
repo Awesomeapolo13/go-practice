@@ -65,6 +65,7 @@ func (storage *StorageWithDI) AddBin(bin bins.Bin) {
 	binsList = append(binsList, bin)
 	storage.Storage.Bins.Bins = binsList
 	storage.Storage.UpdatedAt = time.Now()
+
 	data, err := storage.ToByteSlice()
 	if err != nil {
 		fmt.Println("Could not marshal " + storageFileName)
@@ -88,6 +89,29 @@ func (storage *StorageWithDI) FindBinById(id string) (*bins.Bin, error) {
 	}
 
 	return nil, errors.New("Could not find a bin with id " + id)
+}
+
+func (storage *StorageWithDI) RemoveBinBId(id string) error {
+	var newBinList []bins.Bin
+	binList := storage.FindAllBins()
+	for _, bin := range binList.Bins {
+		if bin.Id != id {
+			newBinList = append(newBinList, bin)
+		}
+	}
+
+	binList.Bins = newBinList
+	storage.Storage.UpdatedAt = time.Now()
+	data, err := storage.ToByteSlice()
+	if err != nil {
+		return errors.New("could not marshal " + storageFileName)
+	}
+	err = storage.fileSrv.WriteFile(data, storageFileName)
+	if err != nil {
+		return errors.New(err.Error())
+	}
+
+	return nil
 }
 
 func (storage *StorageWithDI) ToByteSlice() ([]byte, error) {

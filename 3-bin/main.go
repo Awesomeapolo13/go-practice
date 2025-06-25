@@ -83,9 +83,8 @@ func updateBin(binsFile, binsId string) {
 	if binsFile == "" || binsId == "" {
 		panic("Please specify bins file and id")
 	}
-	//appConfig := appConfig.NewConfig()
+
 	storageDb := storage.NewStorage(file.NewFile())
-	//api := binApi.NewAPI(appConfig, storageDb)
 	binToUpdate, err := storageDb.FindBinById(binsId)
 	if err != nil {
 		panic(err)
@@ -99,15 +98,36 @@ func updateBin(binsFile, binsId string) {
 	if err != nil {
 		panic(err)
 	}
+
+	msg := fmt.Sprintf("Bin with name %s and ID %s successfully updated", binToUpdate.Name, binToUpdate.Id)
+	fmt.Println(msg)
 }
 
 func deleteBin(binsId string) {
 	if binsId == "" {
 		panic("Please specify bins id")
 	}
-	// Находим такой бин в локальном хранилище, если его нет то ошибка
-	// Отправляем запрос в API.
-	// Удаляем бин из локального хранилища
+	storageDb := storage.NewStorage(file.NewFile())
+	binToDelete, err := storageDb.FindBinById(binsId)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Deleting bin", binToDelete.Name)
+
+	appConfig := appConfig.NewConfig()
+	api := binApi.NewAPI(appConfig, storageDb)
+	err = api.DeleteBin(binToDelete.Id)
+	if err != nil {
+		panic(err)
+	}
+
+	err = storageDb.RemoveBinBId(binsId)
+	if err != nil {
+		panic(err)
+	}
+
+	msg := fmt.Sprintf("Bin with name %s and ID %s successfully removed", binToDelete.Name, binToDelete.Id)
+	fmt.Println(msg)
 }
 
 func getBin(binsId string) {

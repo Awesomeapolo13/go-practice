@@ -87,8 +87,19 @@ func (api *API) UpdateBin(binId string, data []byte) error {
 	return nil
 }
 
-func (api *API) DeleteBin(bin bins.Bin) {
-	// Заглушка
+func (api *API) DeleteBin(binId string) error {
+	url := apiRootUrl + "/b/" + binId
+	req, err := api.prepareRequest(url, DELETE, nil)
+	if err != nil {
+		return err
+	}
+
+	_, err = api.getResponse(url, req)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (api *API) LoadToCloud(bins bins.BinList) {
