@@ -45,8 +45,24 @@ func NewAPI(config ConfigInterface, storage StorageInterface) *API {
 	}
 }
 
-func (api *API) GetBin(id string) {
-	// Заглушка
+func (api *API) GetBin(binId string) (*bins.Bin, error) {
+	url := apiRootUrl + "/b/" + binId
+	req, err := api.prepareRequest(url, GET, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := api.getResponse(url, req)
+	if err != nil {
+		return nil, err
+	}
+
+	bin, err := mapToBin(body)
+	if err != nil {
+		return nil, err
+	}
+
+	return bin, nil
 }
 
 func (api *API) CreateBin(binName string, data []byte) (*bins.Bin, error) {
@@ -62,15 +78,14 @@ func (api *API) CreateBin(binName string, data []byte) (*bins.Bin, error) {
 		return nil, err
 	}
 
-	var bin bins.Bin
-	err = json.Unmarshal(body, &bin)
+	bin, err := mapToBin(body)
 	if err != nil {
-		return nil, errors.New("Failed to unmarshal response body: " + err.Error())
+		return nil, err
 	}
 	bin.Name = binName
-	api.storage.AddBin(bin)
+	api.storage.AddBin(*bin)
 
-	return &bin, nil
+	return bin, nil
 }
 
 func (api *API) UpdateBin(binId string, data []byte) error {
@@ -143,4 +158,14 @@ func (api *API) getResponse(url string, req *http.Request) ([]byte, error) {
 	}
 
 	return body, nil
+}
+
+func mapToBin(body []byte) (*bins.Bin, error) {
+	var bin bins.Bin
+	err := json.Unmarshal(body, &bin)
+	if err != nil {
+		return nil, errors.New("Failed to unmarshal response body: " + err.Error())
+	}
+
+	return &bin, nil
 }

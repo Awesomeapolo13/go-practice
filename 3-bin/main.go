@@ -75,7 +75,7 @@ func createBin(binsFile, binsName string) {
 	if err != nil {
 		panic(err)
 	}
-	msg := fmt.Sprintf("Bin with name %s successfully created with ID %s", bin.Name, bin.Id)
+	msg := fmt.Sprintf("Bin with name %s was successfully created with ID %s", bin.Name, bin.Id)
 	fmt.Println(msg)
 }
 
@@ -99,7 +99,7 @@ func updateBin(binsFile, binsId string) {
 		panic(err)
 	}
 
-	msg := fmt.Sprintf("Bin with name %s and ID %s successfully updated", binToUpdate.Name, binToUpdate.Id)
+	msg := fmt.Sprintf("Bin with name %s and ID %s was successfully updated", binToUpdate.Name, binToUpdate.Id)
 	fmt.Println(msg)
 }
 
@@ -126,7 +126,7 @@ func deleteBin(binsId string) {
 		panic(err)
 	}
 
-	msg := fmt.Sprintf("Bin with name %s and ID %s successfully removed", binToDelete.Name, binToDelete.Id)
+	msg := fmt.Sprintf("Bin with name %s and ID %s was successfully removed", binToDelete.Name, binToDelete.Id)
 	fmt.Println(msg)
 }
 
@@ -134,9 +134,23 @@ func getBin(binsId string) {
 	if binsId == "" {
 		panic("Please specify bins id")
 	}
-	// Находим такой бин в локальном хранилище, если его нет то ошибка
-	// Получаем бин из API.
-	// Выводим результат в консоль
+	storageDb := storage.NewStorage(file.NewFile())
+	bin, err := storageDb.FindBinById(binsId)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Getting bin", bin.Name)
+
+	appConfig := appConfig.NewConfig()
+	api := binApi.NewAPI(appConfig, storageDb)
+	bin, err = api.GetBin(bin.Id)
+	if err != nil {
+		panic(err)
+	}
+
+	msg := fmt.Sprintf("Bin with name %s and ID %s was successfully found", bin.Name, bin.Id)
+	fmt.Println(msg)
+	fmt.Println(bin)
 }
 
 func getBinList() {
