@@ -87,8 +87,8 @@ func TestGetBin(t *testing.T) {
 	if err != nil {
 		t.Errorf("GetBin failed. Got an error %v", err)
 	}
-	if getBin.Name != expectedName {
-		t.Errorf("Wrong Bin name. Got an error %s, but %s was expected", getBin.Name, expectedName)
+	if getBin.Id != bin.Id {
+		t.Errorf("Got wrong Bin. Got an error %s, but %s was expected", getBin.Id, bin.Id)
 	}
 	// Tear down
 	err = api.DeleteBin(bin.Id)
