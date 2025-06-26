@@ -115,9 +115,9 @@ func TestDeleteBin(t *testing.T) {
 	if err != nil {
 		t.Errorf("DeleteBin failed. Got an error %v", err)
 	}
-	getBin, err := api.GetBin(bin.Id)
-	if getBin != nil {
-		t.Error("Bin has not been deleted")
+	_, err = api.GetBin(bin.Id)
+	if err == nil {
+		t.Error("Expected error when getting deleted bin")
 	}
 }
 
