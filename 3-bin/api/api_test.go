@@ -69,6 +69,58 @@ func TestUpdateBin(t *testing.T) {
 	}
 }
 
+func TestGetBin(t *testing.T) {
+	// Arrange
+	expectedName := "Get Bin"
+	binFile := "./create_bin.json"
+	data := extractAndCheckData(binFile)
+	appConfig := appConfig.NewConfig()
+	storageDb := storage.NewStorage(file.NewFile())
+	api := binApi.NewAPI(appConfig, storageDb)
+	bin, err := api.CreateBin(expectedName, data)
+	if err != nil {
+		panic(err)
+	}
+	// Act
+	getBin, err := api.GetBin(bin.Id)
+	// Assert
+	if err != nil {
+		t.Errorf("GetBin failed. Got an error %v", err)
+	}
+	if getBin.Name != expectedName {
+		t.Errorf("Wrong Bin name. Got an error %s, but %s was expected", getBin.Name, expectedName)
+	}
+	// Tear down
+	err = api.DeleteBin(bin.Id)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func TestDeleteBin(t *testing.T) {
+	// Arrange
+	expectedName := "Delete Bin"
+	binFile := "./create_bin.json"
+	data := extractAndCheckData(binFile)
+	appConfig := appConfig.NewConfig()
+	storageDb := storage.NewStorage(file.NewFile())
+	api := binApi.NewAPI(appConfig, storageDb)
+	bin, err := api.CreateBin(expectedName, data)
+	if err != nil {
+		panic(err)
+	}
+	// Act
+	err = api.DeleteBin(bin.Id)
+	// Assert
+	if err != nil {
+		t.Errorf("DeleteBin failed. Got an error %v", err)
+	}
+	getBin, err := api.GetBin(bin.Id)
+	if getBin != nil {
+		t.Error("Bin has not been deleted")
+	}
+}
+
 func extractAndCheckData(fileName string) []byte {
 	fileSrv := file.NewFile()
 	if !fileSrv.IsJSON(fileName) {
