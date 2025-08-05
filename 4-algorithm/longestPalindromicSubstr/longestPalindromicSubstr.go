@@ -51,3 +51,26 @@ func isPalindrome(str string) bool {
 
 	return true
 }
+
+func isPalindromeWithExpandAroundCenter(str string) bool {
+	length := len(str)
+	i, j := 0, length-1
+	midIdx := i + (j-i)/2
+	if (length % 2) == 0 {
+		i = midIdx
+		j = midIdx
+	} else {
+		i = midIdx
+		j = i + 1
+	}
+
+	for i >= 0 && j != length {
+		if str[i] != str[j] {
+			return false
+		}
+		i--
+		j++
+	}
+
+	return true
+}
