@@ -39,6 +39,36 @@ func FindLongestPalindrome(s string) string {
 	return palindromes[maxLength]
 }
 
+func FindLongestPalindromeExpandAroundCenter(s string) string {
+	if len(s) == 0 {
+		return ""
+	}
+
+	start := 0
+	maxLength := 1
+	length := len(s)
+
+	for i := 0; i < length; i++ {
+		// Проверяем палиндромы нечетной длины (центр в символе)
+		len1 := expandAroundCenter(s, i, i)
+
+		// Проверяем палиндромы четной длины (центр между символами)
+		len2 := expandAroundCenter(s, i, i+1)
+
+		// Берем максимальную длину из двух вариантов
+		currentMaxLength := max(len1, len2)
+
+		// Обновляем результат, если найден более длинный палиндром
+		if currentMaxLength > maxLength {
+			maxLength = currentMaxLength
+			// Вычисляем начальную позицию палиндрома
+			start = i - (currentMaxLength-1)/2
+		}
+	}
+
+	return s[start : start+maxLength]
+}
+
 func isPalindrome(str string) bool {
 	i, j := 0, len(str)-1
 	for i < j {
@@ -50,6 +80,26 @@ func isPalindrome(str string) bool {
 	}
 
 	return true
+}
+
+func expandAroundCenter(s string, left, right int) int {
+	length := len(s)
+
+	// Расширяемся пока символы совпадают и не выходим за границы
+	for left >= 0 && right < length && s[left] == s[right] {
+		left--
+		right++
+	}
+
+	// Возвращаем длину найденного палиндрома
+	return right - left - 1
+}
+
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
 }
 
 func isPalindromeWithExpandAroundCenter(str string) bool {

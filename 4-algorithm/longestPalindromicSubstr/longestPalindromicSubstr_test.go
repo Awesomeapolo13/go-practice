@@ -27,3 +27,14 @@ func TestFindLongestPalindrome(t *testing.T) {
 		})
 	}
 }
+
+func TestLongestPalindrome(t *testing.T) {
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := longestPalindromicSubstr.FindLongestPalindromeExpandAroundCenter(tc.str)
+			if result != tc.expected {
+				t.Errorf("TestCase %v failed. Got %v, expected %v", tc.name, result, tc.expected)
+			}
+		})
+	}
+}
