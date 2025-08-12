@@ -19,10 +19,10 @@ var testCases = []struct {
 	{"3 to 4", 2, 4, 16},
 }
 
-func TestRaiseNumberToIntPositivePower(t *testing.T) {
+func TestRaiseIntToIntPositivePower(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result := pow.RaiseNumberToIntPositivePower(tc.number, tc.power)
+			result := pow.RaiseIntToIntPositivePower(tc.number, tc.power)
 			if result != tc.expected {
 				t.Errorf("expected %d, got %d", tc.expected, result)
 			}

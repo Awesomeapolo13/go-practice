@@ -1,6 +1,11 @@
 package pow
 
-func RaiseNumberToIntPositivePower(num, power int) int {
+func RaiseIntToIntPositivePower(num, power int) int {
+
+	if num < 0 {
+		panic("num cannot be negative")
+	}
+
 	if power == 0 {
 		return 1
 	}
@@ -11,16 +16,16 @@ func RaiseNumberToIntPositivePower(num, power int) int {
 
 	isEven := power%2 == 0
 	if !isEven {
-		return num * RaiseNumberToIntPositivePower(num, power-1)
+		return num * RaiseIntToIntPositivePower(num, power-1)
 	}
 
 	if power == 2 {
-		return powIntTo2(num)
+		return powTo2(num)
 	}
 
-	return powIntTo2(RaiseNumberToIntPositivePower(num, power/2))
+	return powTo2(RaiseIntToIntPositivePower(num, power/2))
 }
 
-func powIntTo2(num int) int {
+func powTo2[T int | float64](num T) T {
 	return num * num
 }
