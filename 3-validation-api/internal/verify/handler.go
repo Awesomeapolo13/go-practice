@@ -2,8 +2,15 @@ package verify
 
 import (
 	"go/validation-api/configs"
+	"go/validation-api/pkg/files"
+	"go/validation-api/pkg/request"
 	"go/validation-api/pkg/response"
+	"hash/fnv"
 	"net/http"
+	"net/smtp"
+	"strconv"
+
+	"github.com/jordan-wright/email"
 )
 
 type VerificationHandlerDeps struct {
@@ -25,6 +32,41 @@ func NewVerificationHandler(router *http.ServeMux, deps VerificationHandlerDeps)
 
 func (h *VerificationHandler) Send() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		body, err := request.HandleBody[SendVerificationRequest](&w, r)
+		if err != nil {
+			return
+		}
+
+		emailConfirmationConf := h.Config.EmailConfirmation
+
+		hasher := fnv.New32a()
+		hasher.Write([]byte(body.Email))
+		hashNumber := hasher.Sum32()
+
+		hash := strconv.FormatUint(uint64(hashNumber), 36)
+		varification := NewVerification(body.Email, hash)
+		link := "http://localhost:8081/verify/" + hash
+
+		e := &email.Email{
+			To:      []string{body.Email},
+			From:    "Email verification <" + emailConfirmationConf.Email + ">",
+			Subject: "Verify your email address",
+			Text:    []byte("Click on the link to verify your e-mail address in your browser"),
+			HTML:    []byte("<a href=\"" + link + "\">Click here</a>"),
+		}
+		err = e.Send("smtp.yandex.ru:465", smtp.PlainAuth("", emailConfirmationConf.Email, emailConfirmationConf.Password, "smtp.yandex.ru"))
+		if err != nil {
+			return
+		}
+
+		db := files.NewJsonDB("database.json")
+		verifications, _ := files.GetCollection[Varification](db, "email_verification")
+		verifications = append(verifications, *varification)
+		err = files.SetCollection(db, "email_verification", verifications)
+		if err != nil {
+			return
+		}
+
 		res := SendVerificationResponse{
 			Success: true,
 		}
