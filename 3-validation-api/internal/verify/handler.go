@@ -56,6 +56,7 @@ func (h *VerificationHandler) Send() http.HandlerFunc {
 		}
 		err = e.Send("smtp.yandex.ru:465", smtp.PlainAuth("", emailConfirmationConf.Email, emailConfirmationConf.Password, "smtp.yandex.ru"))
 		if err != nil {
+			response.Json(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
@@ -64,6 +65,7 @@ func (h *VerificationHandler) Send() http.HandlerFunc {
 		verifications = append(verifications, *varification)
 		err = files.SetCollection(db, "email_verification", verifications)
 		if err != nil {
+			response.Json(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 

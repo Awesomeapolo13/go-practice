@@ -23,17 +23,24 @@ func (db *JsonDB) Read() ([]byte, error) {
 	return data, nil
 }
 
-func (db *JsonDB) Write(content []byte) {
+func (db *JsonDB) Write(content []byte) error {
 	file, err := os.Create(db.fileName)
 	if err != nil {
-		return
+		return err
 	}
-	defer file.Close()
+	defer func(file *os.File) error {
+		err := file.Close()
+		if err != nil {
+			return err
+		}
+		return nil
+	}(file)
 
 	_, err = file.Write(content)
 	if err != nil {
-		return
+		return err
 	}
+	return nil
 }
 
 func GetCollection[T any](db *JsonDB, name string) ([]T, error) {
@@ -72,6 +79,9 @@ func SetCollection[T any](db *JsonDB, name string, items []T) error {
 	if err != nil {
 		return err
 	}
-	db.Write(data)
+	err = db.Write(data)
+	if err != nil {
+		return err
+	}
 	return nil
 }
