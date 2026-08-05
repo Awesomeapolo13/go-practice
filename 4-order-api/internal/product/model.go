@@ -7,7 +7,6 @@ import (
 
 // Обновление продукта
 // Удаление продукта
-// Получение продукта по ID
 type Product struct {
 	gorm.Model
 	Name        string         `json:"name"`

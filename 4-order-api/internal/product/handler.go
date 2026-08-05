@@ -6,6 +6,8 @@ import (
 	"go/order-api/pkg/response"
 	"net/http"
 	"strconv"
+
+	"gorm.io/gorm"
 )
 
 type ProductHandlerDeps struct {
@@ -26,6 +28,7 @@ func NewProductHandler(router *http.ServeMux, deps ProductHandlerDeps) {
 
 	router.HandleFunc("POST /product", handler.Create())
 	router.HandleFunc("GET /product/{id}", handler.GetByID())
+	router.HandleFunc("PATCH /product/{id}", handler.Update())
 }
 
 func (handler *ProductHandler) Create() http.HandlerFunc {
@@ -60,5 +63,34 @@ func (handler *ProductHandler) GetByID() http.HandlerFunc {
 		}
 
 		response.Json(w, product, http.StatusCreated)
+	}
+}
+
+func (handler *ProductHandler) Update() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		body, err := request.HandleBody[UpdateProductRequest](&w, r)
+		if err != nil {
+			return
+		}
+
+		idStr := r.PathValue("id")
+		id, err := strconv.ParseUint(idStr, 10, 64)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		link, err := handler.ProductRepository.Update(&Product{
+			Model:       gorm.Model{ID: uint(id)},
+			Name:        body.Name,
+			Description: body.Description,
+			Images:      body.Images,
+		})
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		response.Json(w, link, http.StatusOK)
 	}
 }
