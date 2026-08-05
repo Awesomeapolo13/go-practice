@@ -5,6 +5,10 @@ import (
 	"gorm.io/gorm"
 )
 
+// Создание продукта
+// Обновление продукта
+// Удаление продукта
+// Получение продукта по ID
 type Product struct {
 	gorm.Model
 	Name        string         `json:"name"`
@@ -12,7 +16,7 @@ type Product struct {
 	Images      pq.StringArray `json:"images"`
 }
 
-func NewLink(name, description string, images []string) *Product {
+func NewProduct(name, description string, images []string) *Product {
 	return &Product{
 		Name:        name,
 		Description: description,

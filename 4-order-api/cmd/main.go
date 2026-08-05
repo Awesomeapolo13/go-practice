@@ -15,13 +15,18 @@ import (
 
 func main() {
 	conf := configs.LoadConfig()
-	_ = db.NewDb(conf)
+	dataBase := db.NewDb(conf)
 	runAutoMigrations()
 
 	router := http.NewServeMux()
+	productRepo := product.NewProductRepository(dataBase)
 
 	auth.NewAuthHandler(router, auth.AuthenticationHandlerDeps{
 		Config: conf,
+	})
+	product.NewProductHandler(router, product.ProductHandlerDeps{
+		Config:            conf,
+		ProductRepository: productRepo,
 	})
 
 	server := http.Server{
