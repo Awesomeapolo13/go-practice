@@ -5,8 +5,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// Обновление продукта
-// Удаление продукта
 type Product struct {
 	gorm.Model
 	Name        string         `json:"name"`

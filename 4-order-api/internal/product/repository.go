@@ -43,3 +43,12 @@ func (repo *ProductRepository) Update(product *Product) (*Product, error) {
 
 	return product, nil
 }
+
+func (repo *ProductRepository) Delete(id uint) error {
+	result := repo.Database.DB.Delete(&Product{}, id)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}

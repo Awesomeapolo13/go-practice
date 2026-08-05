@@ -29,6 +29,7 @@ func NewProductHandler(router *http.ServeMux, deps ProductHandlerDeps) {
 	router.HandleFunc("POST /product", handler.Create())
 	router.HandleFunc("GET /product/{id}", handler.GetByID())
 	router.HandleFunc("PATCH /product/{id}", handler.Update())
+	router.HandleFunc("DELETE /product/{id}", handler.Delete())
 }
 
 func (handler *ProductHandler) Create() http.HandlerFunc {
@@ -80,7 +81,7 @@ func (handler *ProductHandler) Update() http.HandlerFunc {
 			return
 		}
 
-		link, err := handler.ProductRepository.Update(&Product{
+		product, err := handler.ProductRepository.Update(&Product{
 			Model:       gorm.Model{ID: uint(id)},
 			Name:        body.Name,
 			Description: body.Description,
@@ -91,6 +92,25 @@ func (handler *ProductHandler) Update() http.HandlerFunc {
 			return
 		}
 
-		response.Json(w, link, http.StatusOK)
+		response.Json(w, product, http.StatusOK)
+	}
+}
+
+func (handler *ProductHandler) Delete() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		idStr := r.PathValue("id")
+		id, err := strconv.ParseUint(idStr, 10, 64)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		err = handler.ProductRepository.Delete(uint(id))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		response.Json(w, nil, http.StatusOK)
 	}
 }
