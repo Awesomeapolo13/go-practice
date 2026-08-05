@@ -20,3 +20,13 @@ func (repo *ProductRepository) Create(product *Product) (*Product, error) {
 
 	return product, nil
 }
+
+func (repo *ProductRepository) FindByID(id uint) (*Product, error) {
+	var product *Product
+	result := repo.Database.DB.First(&product, id)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return product, nil
+}
