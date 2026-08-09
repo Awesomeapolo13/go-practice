@@ -6,6 +6,7 @@ import (
 	"go/order-api/internal/auth"
 	"go/order-api/internal/product"
 	"go/order-api/pkg/db"
+	"go/order-api/pkg/middleware"
 	"net/http"
 	"os"
 
@@ -29,9 +30,14 @@ func main() {
 		ProductRepository: productRepo,
 	})
 
+	chain := middleware.Chain(
+		middleware.CORS,
+		middleware.Logging,
+	)
+
 	server := http.Server{
 		Addr:    ":8081",
-		Handler: router,
+		Handler: chain(router),
 	}
 
 	fmt.Println("Server is listening on port 8081")
