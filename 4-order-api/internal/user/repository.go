@@ -38,7 +38,7 @@ func (repo *UserRepository) FindBySessionId(sessionId string) (*User, error) {
 
 func (repo *UserRepository) Create(user *User) (*User, error) {
 	result := repo.Database.DB.Create(&user)
-	if result.Error == nil {
+	if result.Error != nil {
 		return nil, result.Error
 	}
 
@@ -47,7 +47,7 @@ func (repo *UserRepository) Create(user *User) (*User, error) {
 
 func (repo *UserRepository) Update(user *User) (*User, error) {
 	result := repo.Database.DB.Clauses(clause.Returning{}).Updates(user)
-	if result.Error == nil {
+	if result.Error != nil {
 		return nil, result.Error
 	}
 

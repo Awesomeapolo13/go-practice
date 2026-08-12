@@ -5,6 +5,7 @@ import (
 	"go/order-api/configs"
 	"go/order-api/internal/auth"
 	"go/order-api/internal/product"
+	"go/order-api/internal/user"
 	"go/order-api/pkg/db"
 	"go/order-api/pkg/middleware"
 	"net/http"
@@ -21,9 +22,13 @@ func main() {
 
 	router := http.NewServeMux()
 	productRepo := product.NewProductRepository(dataBase)
+	userRepo := user.NewUserRepository(dataBase)
+
+	authService := auth.NewAuthService(userRepo)
 
 	auth.NewAuthHandler(router, auth.AuthenticationHandlerDeps{
-		Config: conf,
+		Config:      conf,
+		AuthService: authService,
 	})
 	product.NewProductHandler(router, product.ProductHandlerDeps{
 		Config:            conf,
