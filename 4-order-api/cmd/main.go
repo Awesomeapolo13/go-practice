@@ -54,7 +54,7 @@ func runAutoMigrations() {
 	if err != nil {
 		panic(err)
 	}
-	err = database.AutoMigrate(&product.Product{})
+	err = database.AutoMigrate(&product.Product{}, &user.User{})
 	if err != nil {
 		panic(err)
 	}
