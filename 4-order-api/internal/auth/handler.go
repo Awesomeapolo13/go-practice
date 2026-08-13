@@ -3,6 +3,7 @@ package auth
 import (
 	"go/order-api/configs"
 	"go/order-api/pkg/jwt"
+	"go/order-api/pkg/notification"
 	"go/order-api/pkg/request"
 	"go/order-api/pkg/response"
 	"net/http"
@@ -11,17 +12,20 @@ import (
 type AuthenticationHandlerDeps struct {
 	*configs.Config
 	*AuthService
+	*notification.Notificator
 }
 
 type AuthenticationHandler struct {
 	*configs.Config
 	*AuthService
+	*notification.Notificator
 }
 
 func NewAuthHandler(router *http.ServeMux, deps AuthenticationHandlerDeps) {
 	handler := &AuthenticationHandler{
 		Config:      deps.Config,
 		AuthService: deps.AuthService,
+		Notificator: deps.Notificator,
 	}
 
 	router.HandleFunc("POST /auth/login", handler.AuthByPhone())
@@ -35,11 +39,13 @@ func (h *AuthenticationHandler) AuthByPhone() http.HandlerFunc {
 			return
 		}
 
-		sessionId, err := h.AuthService.CreateNewSessionId(body.PhoneNumber)
+		sessionId, verificationCode, err := h.AuthService.CreateNewSessionCredentials(body.PhoneNumber)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
+
+		h.Notificator.SendCodeBySMS(body.PhoneNumber, verificationCode)
 
 		data := AuthResponse{
 			SessionId: sessionId,

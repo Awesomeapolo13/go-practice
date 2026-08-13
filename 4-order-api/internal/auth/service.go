@@ -4,11 +4,12 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"go/order-api/internal/user"
+	"math/big"
 )
 
 const (
-	DefaultAuthCode     = "0000"
 	DefaultSessIdLength = 32
 )
 
@@ -22,29 +23,35 @@ func NewAuthService(userRepository *user.UserRepository) *AuthService {
 	}
 }
 
-func (service *AuthService) CreateNewSessionId(phone string) (string, error) {
+func (service *AuthService) CreateNewSessionCredentials(phone string) (string, string, error) {
 	existedUser, _ := service.UserRepository.FindByPhone(phone)
 	sessionId, err := generateSessionId(DefaultSessIdLength)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
+	verificationCode, err := generateAuthCode()
+	if err != nil {
+		return "", "", err
+	}
+
 	if existedUser != nil {
 		existedUser.SessionId = sessionId
+		existedUser.VerificationCode = verificationCode
 		_, err = service.UserRepository.Update(existedUser)
 		if err != nil {
-			return "", err
+			return "", "", err
 		}
 
-		return sessionId, nil
+		return sessionId, verificationCode, nil
 	}
 
-	existedUser = user.NewUser(phone, sessionId)
+	existedUser = user.NewUser(phone, sessionId, verificationCode)
 	_, err = service.UserRepository.Create(existedUser)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	return sessionId, nil
+	return sessionId, verificationCode, nil
 }
 
 func (service *AuthService) VerifyByCode(sessionId, code string) (string, error) {
@@ -53,7 +60,7 @@ func (service *AuthService) VerifyByCode(sessionId, code string) (string, error)
 		return "", errors.New(ErrWrongCredentials)
 	}
 
-	if code != DefaultAuthCode {
+	if code != existedUser.VerificationCode {
 		return "", errors.New(ErrWrongCredentials)
 	}
 
@@ -68,4 +75,14 @@ func generateSessionId(length int) (string, error) {
 	}
 
 	return base64.URLEncoding.EncodeToString(b), nil
+}
+
+func generateAuthCode() (string, error) {
+	maxInt := big.NewInt(10000)
+	n, err := rand.Int(rand.Reader, maxInt)
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%04d", n.Int64()), nil
 }

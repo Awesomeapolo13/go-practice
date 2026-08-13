@@ -8,6 +8,7 @@ import (
 	"go/order-api/internal/user"
 	"go/order-api/pkg/db"
 	"go/order-api/pkg/middleware"
+	"go/order-api/pkg/notification"
 	"net/http"
 	"os"
 
@@ -25,10 +26,12 @@ func main() {
 	userRepo := user.NewUserRepository(dataBase)
 
 	authService := auth.NewAuthService(userRepo)
+	notificatorService := notification.NewNotificator()
 
 	auth.NewAuthHandler(router, auth.AuthenticationHandlerDeps{
 		Config:      conf,
 		AuthService: authService,
+		Notificator: notificatorService,
 	})
 	product.NewProductHandler(router, product.ProductHandlerDeps{
 		Config:            conf,
