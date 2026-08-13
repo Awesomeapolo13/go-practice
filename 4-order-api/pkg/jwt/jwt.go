@@ -1,6 +1,10 @@
 package jwt
 
-import "github.com/golang-jwt/jwt/v5"
+import (
+	"fmt"
+
+	"github.com/golang-jwt/jwt/v5"
+)
 
 type JWT struct {
 	Secret string
@@ -23,4 +27,13 @@ func (j *JWT) Create(phone string) (string, error) {
 	}
 
 	return s, nil
+}
+
+func (j *JWT) Parse(tokenString string) (*jwt.Token, error) {
+	return jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return j.Secret, nil
+	})
 }
