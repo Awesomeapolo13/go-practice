@@ -1,30 +1,42 @@
 package middleware
 
 import (
+	"context"
+	"go/order-api/configs"
 	"go/order-api/pkg/jwt"
 	"net/http"
-	"os"
 	"strings"
 )
 
-func IsAuthed(next http.Handler) http.Handler {
+type key string
+
+const (
+	ContextPhoneKey key = "ContextPhoneKey"
+)
+
+func IsAuthed(next http.Handler, config *configs.Config) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authedHeader := r.Header.Get("Authorization")
-		secret := os.Getenv("SECRET")
-		jwtService := jwt.NewJWT(secret)
+		if !strings.HasPrefix(authedHeader, "Bearer ") {
+			writeUnauthed(w)
+			return
+		}
+
 		token := strings.TrimPrefix(authedHeader, "Bearer ")
-
-		if token == "" {
-			w.WriteHeader(http.StatusUnauthorized)
+		isValid, data := jwt.NewJWT(config.Auth.Secret).Parse(token)
+		if !isValid {
+			writeUnauthed(w)
 			return
 		}
 
-		jwtToken, err := jwtService.Parse(token)
-		if err != nil || !jwtToken.Valid {
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
+		ctx := context.WithValue(r.Context(), ContextPhoneKey, data.Phone)
+		req := r.WithContext(ctx)
 
-		next.ServeHTTP(w, r)
+		next.ServeHTTP(w, req)
 	})
+}
+
+func writeUnauthed(w http.ResponseWriter) {
+	w.WriteHeader(http.StatusUnauthorized)
+	w.Write([]byte(http.StatusText(http.StatusUnauthorized)))
 }
