@@ -27,10 +27,10 @@ func NewProductHandler(router *http.ServeMux, deps ProductHandlerDeps) {
 		ProductRepository: deps.ProductRepository,
 	}
 
-	router.Handle("POST /product", middleware.IsAuthed(handler.Create()))
-	router.Handle("GET /product/{id}", middleware.IsAuthed(handler.GetByID()))
-	router.Handle("PATCH /product/{id}", middleware.IsAuthed(handler.Update()))
-	router.Handle("DELETE /product/{id}", middleware.IsAuthed(handler.Delete()))
+	router.Handle("POST /product", middleware.IsAuthed(handler.Create(), deps.Config))
+	router.Handle("GET /product/{id}", middleware.IsAuthed(handler.GetByID(), deps.Config))
+	router.Handle("PATCH /product/{id}", middleware.IsAuthed(handler.Update(), deps.Config))
+	router.Handle("DELETE /product/{id}", middleware.IsAuthed(handler.Delete(), deps.Config))
 }
 
 func (handler *ProductHandler) Create() http.HandlerFunc {
