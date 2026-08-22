@@ -52,3 +52,13 @@ func (repo *ProductRepository) Delete(id uint) error {
 
 	return nil
 }
+
+func (repo *ProductRepository) FindAllByIDs(ids []uint) ([]Product, error) {
+	var products []Product
+	result := repo.Database.DB.Find(&products, ids)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return products, nil
+}
