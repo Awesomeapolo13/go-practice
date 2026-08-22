@@ -44,8 +44,10 @@ func main() {
 		ProductRepository: productRepo,
 	})
 	order.NewOrderHandler(router, order.OrderHandlerDeps{
-		Config:          conf,
-		OrderRepository: orderRepo,
+		Config:            conf,
+		OrderRepository:   orderRepo,
+		UserRepository:    userRepo,
+		ProductRepository: productRepo,
 	})
 
 	chain := middleware.Chain(
@@ -67,7 +69,7 @@ func runAutoMigrations() {
 	if err != nil {
 		panic(err)
 	}
-	err = database.AutoMigrate(&product.Product{}, &user.User{})
+	err = database.AutoMigrate(&product.Product{}, &user.User{}, &order.Order{})
 	if err != nil {
 		panic(err)
 	}

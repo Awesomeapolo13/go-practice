@@ -48,6 +48,7 @@ func (h *OrderHandler) CreateOrder() http.HandlerFunc {
 		foundUser := h.getUser(r)
 		if foundUser == nil {
 			writeUnauthed(w)
+			return
 		}
 
 		products, err := h.ProductRepository.FindAllByIDs(body.Products)
@@ -84,6 +85,7 @@ func (h *OrderHandler) GetOrder() http.HandlerFunc {
 		foundUser := h.getUser(r)
 		if foundUser == nil {
 			writeUnauthed(w)
+			return
 		}
 
 		order, err := h.OrderRepository.FindUserOrderById(uint(id), foundUser.ID)
@@ -101,6 +103,7 @@ func (h *OrderHandler) GetOrdersByUser() http.HandlerFunc {
 		foundUser := h.getUser(r)
 		if foundUser == nil {
 			writeUnauthed(w)
+			return
 		}
 		orders := h.OrderRepository.GetUserOrders(foundUser.ID)
 
