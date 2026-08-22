@@ -2,11 +2,13 @@ package order
 
 import (
 	"go/order-api/configs"
+	"go/order-api/internal/user"
 	"go/order-api/pkg/di"
 	"go/order-api/pkg/middleware"
 	"go/order-api/pkg/request"
 	"go/order-api/pkg/response"
 	"net/http"
+	"strconv"
 )
 
 type OrderHandlerDeps struct {
@@ -42,16 +44,10 @@ func (h *OrderHandler) CreateOrder() http.HandlerFunc {
 		if err != nil {
 			return
 		}
-		phone, ok := r.Context().Value(middleware.ContextPhoneKey).(string)
-		if !ok {
-			writeUnauthed(w)
-			return
-		}
 
-		user, err := h.UserRepository.FindByPhone(phone)
-		if err != nil {
+		foundUser := h.getUser(r)
+		if foundUser == nil {
 			writeUnauthed(w)
-			return
 		}
 
 		products, err := h.ProductRepository.FindAllByIDs(body.Products)
@@ -63,7 +59,7 @@ func (h *OrderHandler) CreateOrder() http.HandlerFunc {
 			body.OrderDate,
 			body.IsDelivery,
 			body.IsExpress,
-			*user,
+			*foundUser,
 			products,
 		)
 
@@ -79,7 +75,24 @@ func (h *OrderHandler) CreateOrder() http.HandlerFunc {
 
 func (h *OrderHandler) GetOrder() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		idStr := r.PathValue("id")
+		id, err := strconv.ParseUint(idStr, 10, 64)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		foundUser := h.getUser(r)
+		if foundUser == nil {
+			writeUnauthed(w)
+		}
 
+		order, err := h.OrderRepository.FindUserOrderById(uint(id), foundUser.ID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+
+		response.Json(w, order, http.StatusCreated)
 	}
 }
 
@@ -92,4 +105,18 @@ func (h *OrderHandler) GetOrdersByUser() http.HandlerFunc {
 func writeUnauthed(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusUnauthorized)
 	w.Write([]byte(http.StatusText(http.StatusUnauthorized)))
+}
+
+func (h *OrderHandler) getUser(r *http.Request) *user.User {
+	phone, ok := r.Context().Value(middleware.ContextPhoneKey).(string)
+	if !ok {
+		return nil
+	}
+
+	currentUser, err := h.UserRepository.FindByPhone(phone)
+	if err != nil {
+		return nil
+	}
+
+	return currentUser
 }
