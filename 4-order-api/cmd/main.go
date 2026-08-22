@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go/order-api/configs"
 	"go/order-api/internal/auth"
+	"go/order-api/internal/order"
 	"go/order-api/internal/product"
 	"go/order-api/internal/user"
 	"go/order-api/pkg/db"
@@ -22,12 +23,17 @@ func main() {
 	runAutoMigrations()
 
 	router := http.NewServeMux()
+
+	// Repository
 	productRepo := product.NewProductRepository(dataBase)
 	userRepo := user.NewUserRepository(dataBase)
+	orderRepo := order.NewOrderRepository(dataBase)
 
+	// Services
 	authService := auth.NewAuthService(userRepo)
 	notificatorService := notification.NewNotificator()
 
+	// Handlers
 	auth.NewAuthHandler(router, auth.AuthenticationHandlerDeps{
 		Config:      conf,
 		AuthService: authService,
@@ -36,6 +42,10 @@ func main() {
 	product.NewProductHandler(router, product.ProductHandlerDeps{
 		Config:            conf,
 		ProductRepository: productRepo,
+	})
+	order.NewOrderHandler(router, order.OrderHandlerDeps{
+		Config:          conf,
+		OrderRepository: orderRepo,
 	})
 
 	chain := middleware.Chain(
