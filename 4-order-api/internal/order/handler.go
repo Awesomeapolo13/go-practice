@@ -98,7 +98,15 @@ func (h *OrderHandler) GetOrder() http.HandlerFunc {
 
 func (h *OrderHandler) GetOrdersByUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		foundUser := h.getUser(r)
+		if foundUser == nil {
+			writeUnauthed(w)
+		}
+		orders := h.OrderRepository.GetUserOrders(foundUser.ID)
 
+		response.Json(w, GetUserOrdersResponse{
+			Orders: orders,
+		}, http.StatusOK)
 	}
 }
 

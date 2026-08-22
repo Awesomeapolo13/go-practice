@@ -27,6 +27,7 @@ func (repo *OrderRepository) FindUserOrderById(orderId uint, userId uint) (*Orde
 	var order *Order
 	result := repo.Database.DB.
 		Preload("User").
+		Preload("Products").
 		Where("id = ? AND user_id = ?", orderId, userId).
 		First(&order)
 	if result.Error != nil {
@@ -34,4 +35,18 @@ func (repo *OrderRepository) FindUserOrderById(orderId uint, userId uint) (*Orde
 	}
 
 	return order, nil
+}
+
+func (repo *OrderRepository) GetUserOrders(userId uint) []Order {
+	var orders []Order
+	repo.Database.DB.
+		Table("orders").
+		Preload("User").
+		Preload("Products").
+		Where("user_id = ?", userId).
+		Where("deleted_at IS NULL").
+		Order("created_at DESC").
+		Scan(&orders)
+
+	return orders
 }

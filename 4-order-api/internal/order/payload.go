@@ -8,3 +8,7 @@ type CreateOrderRequest struct {
 	IsExpress  bool      `json:"is_express" validate:"required"`
 	Products   []uint    `json:"products" validate:"required"`
 }
+
+type GetUserOrdersResponse struct {
+	Orders []Order `json:"orders"`
+}
