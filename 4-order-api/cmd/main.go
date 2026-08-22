@@ -5,8 +5,10 @@ import (
 	"go/order-api/configs"
 	"go/order-api/internal/auth"
 	"go/order-api/internal/product"
+	"go/order-api/internal/user"
 	"go/order-api/pkg/db"
 	"go/order-api/pkg/middleware"
+	"go/order-api/pkg/notification"
 	"net/http"
 	"os"
 
@@ -21,9 +23,15 @@ func main() {
 
 	router := http.NewServeMux()
 	productRepo := product.NewProductRepository(dataBase)
+	userRepo := user.NewUserRepository(dataBase)
+
+	authService := auth.NewAuthService(userRepo)
+	notificatorService := notification.NewNotificator()
 
 	auth.NewAuthHandler(router, auth.AuthenticationHandlerDeps{
-		Config: conf,
+		Config:      conf,
+		AuthService: authService,
+		Notificator: notificatorService,
 	})
 	product.NewProductHandler(router, product.ProductHandlerDeps{
 		Config:            conf,
@@ -49,7 +57,7 @@ func runAutoMigrations() {
 	if err != nil {
 		panic(err)
 	}
-	err = database.AutoMigrate(&product.Product{})
+	err = database.AutoMigrate(&product.Product{}, &user.User{})
 	if err != nil {
 		panic(err)
 	}

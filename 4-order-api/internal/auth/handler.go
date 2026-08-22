@@ -1,8 +1,9 @@
 package auth
 
 import (
-	"fmt"
 	"go/order-api/configs"
+	"go/order-api/pkg/jwt"
+	"go/order-api/pkg/notification"
 	"go/order-api/pkg/request"
 	"go/order-api/pkg/response"
 	"net/http"
@@ -10,19 +11,25 @@ import (
 
 type AuthenticationHandlerDeps struct {
 	*configs.Config
+	*AuthService
+	*notification.Notificator
 }
 
 type AuthenticationHandler struct {
 	*configs.Config
+	*AuthService
+	*notification.Notificator
 }
 
 func NewAuthHandler(router *http.ServeMux, deps AuthenticationHandlerDeps) {
 	handler := &AuthenticationHandler{
-		Config: deps.Config,
+		Config:      deps.Config,
+		AuthService: deps.AuthService,
+		Notificator: deps.Notificator,
 	}
 
 	router.HandleFunc("POST /auth/login", handler.AuthByPhone())
-	router.HandleFunc("GET /auth/verify-code", handler.Verify())
+	router.HandleFunc("POST /auth/verify-code", handler.Verify())
 }
 
 func (h *AuthenticationHandler) AuthByPhone() http.HandlerFunc {
@@ -31,10 +38,20 @@ func (h *AuthenticationHandler) AuthByPhone() http.HandlerFunc {
 		if err != nil {
 			return
 		}
-		fmt.Println(body)
 
-		// Тут будет авторизация
-		response.Json(w, r, http.StatusOK)
+		sessionId, verificationCode, err := h.AuthService.CreateNewSessionCredentials(body.PhoneNumber)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+
+		h.Notificator.SendCodeBySMS(body.PhoneNumber, verificationCode)
+
+		data := AuthResponse{
+			SessionId: sessionId,
+		}
+
+		response.Json(w, data, http.StatusOK)
 	}
 }
 
@@ -44,8 +61,23 @@ func (h *AuthenticationHandler) Verify() http.HandlerFunc {
 		if err != nil {
 			return
 		}
-		fmt.Println(body)
-		// Здесь будет верификация кода
-		response.Json(w, r, http.StatusOK)
+
+		phone, err := h.AuthService.VerifyByCode(body.SessionId, body.Code)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+
+		token, err := jwt.NewJWT(h.Config.Auth.Secret).Create(phone)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		data := VerifyResponse{
+			Token: token,
+		}
+
+		response.Json(w, data, http.StatusOK)
 	}
 }

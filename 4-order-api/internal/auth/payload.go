@@ -5,11 +5,12 @@ type AuthRequest struct {
 }
 
 type AuthResponse struct {
-	Code string `json:"code"`
+	SessionId string `json:"session_id"`
 }
 
 type VerifyRequest struct {
-	Code string `json:"code" validate:"required,len=4"`
+	SessionId string `json:"session_id" validate:"required"`
+	Code      string `json:"code" validate:"required,len=4"`
 }
 
 type VerifyResponse struct {

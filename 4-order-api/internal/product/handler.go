@@ -2,6 +2,7 @@ package product
 
 import (
 	"go/order-api/configs"
+	"go/order-api/pkg/middleware"
 	"go/order-api/pkg/request"
 	"go/order-api/pkg/response"
 	"net/http"
@@ -26,10 +27,10 @@ func NewProductHandler(router *http.ServeMux, deps ProductHandlerDeps) {
 		ProductRepository: deps.ProductRepository,
 	}
 
-	router.HandleFunc("POST /product", handler.Create())
-	router.HandleFunc("GET /product/{id}", handler.GetByID())
-	router.HandleFunc("PATCH /product/{id}", handler.Update())
-	router.HandleFunc("DELETE /product/{id}", handler.Delete())
+	router.Handle("POST /product", middleware.IsAuthed(handler.Create(), deps.Config))
+	router.Handle("GET /product/{id}", middleware.IsAuthed(handler.GetByID(), deps.Config))
+	router.Handle("PATCH /product/{id}", middleware.IsAuthed(handler.Update(), deps.Config))
+	router.Handle("DELETE /product/{id}", middleware.IsAuthed(handler.Delete(), deps.Config))
 }
 
 func (handler *ProductHandler) Create() http.HandlerFunc {
