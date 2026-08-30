@@ -18,6 +18,28 @@ import (
 )
 
 func main() {
+	app := App()
+	server := http.Server{
+		Addr:    ":8081",
+		Handler: app,
+	}
+
+	fmt.Println("Server is listening on port 8081")
+	server.ListenAndServe()
+}
+
+func runAutoMigrations() {
+	database, err := gorm.Open(postgres.Open(os.Getenv("DB_DSN")), &gorm.Config{})
+	if err != nil {
+		panic(err)
+	}
+	err = database.AutoMigrate(&product.Product{}, &user.User{}, &order.Order{})
+	if err != nil {
+		panic(err)
+	}
+}
+
+func App() http.Handler {
 	conf := configs.LoadConfig()
 	dataBase := db.NewDb(conf)
 	runAutoMigrations()
@@ -50,27 +72,10 @@ func main() {
 		ProductRepository: productRepo,
 	})
 
-	chain := middleware.Chain(
+	stack := middleware.Chain(
 		middleware.CORS,
 		middleware.Logging,
 	)
 
-	server := http.Server{
-		Addr:    ":8081",
-		Handler: chain(router),
-	}
-
-	fmt.Println("Server is listening on port 8081")
-	server.ListenAndServe()
-}
-
-func runAutoMigrations() {
-	database, err := gorm.Open(postgres.Open(os.Getenv("DB_DSN")), &gorm.Config{})
-	if err != nil {
-		panic(err)
-	}
-	err = database.AutoMigrate(&product.Product{}, &user.User{}, &order.Order{})
-	if err != nil {
-		panic(err)
-	}
+	return stack(router)
 }
