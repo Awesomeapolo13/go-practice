@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"go/order-api/internal/auth"
 	"go/order-api/internal/order"
 	"go/order-api/internal/product"
 	"go/order-api/internal/user"
@@ -77,7 +78,7 @@ func TestCreateOrderSuccess(t *testing.T) {
 	ts := httptest.NewServer(App())
 	defer ts.Close()
 
-	// Получить токен и добавить его в заголовки к запросу
+	authToken := getToken(t, ts)
 
 	tomorrow := time.Now().Add(time.Hour * 24)
 	data, err := json.Marshal(&order.CreateOrderRequest{
@@ -87,16 +88,26 @@ func TestCreateOrderSuccess(t *testing.T) {
 		Products:   []uint{ExpectedProductID},
 	})
 	if err != nil {
-		t.Fatalf("Error while preparing test data: %v", err)
+		t.Fatalf("Error while preparing CreateOrderRequest: %v", err)
 	}
 
-	resp, err := http.Post(ts.URL+"/order", "application/json", bytes.NewReader(data))
+	req, err := http.NewRequest("POST", ts.URL+"/order", bytes.NewBuffer(data))
+	if err != nil {
+		t.Fatalf("Error creating request: %v", err)
+	}
+	req.Header.Set("Authorization", "Bearer "+authToken)
+
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+	}
+
+	resp, err := client.Do(req)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		t.Fatalf("login failed, expected %d, got %d", http.StatusOK, resp.StatusCode)
+		t.Fatalf("Creating order is failed, expected %d, got %d", http.StatusOK, resp.StatusCode)
 	}
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -110,4 +121,38 @@ func TestCreateOrderSuccess(t *testing.T) {
 	}
 
 	removeData(db)
+}
+
+func getToken(t *testing.T, ts *httptest.Server) string {
+	// Получить токен и добавить его в заголовки к запросу
+	verificationData, err := json.Marshal(&auth.VerifyRequest{
+		SessionId: UserSessionId,
+		Code:      UserVerificationCode,
+	})
+	if err != nil {
+		t.Fatalf("Error while preparing VerifyRequest: %v", err)
+	}
+
+	verificationResp, err := http.Post(ts.URL+"/auth/verify-code", "application/json", bytes.NewReader(verificationData))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if verificationResp.StatusCode != http.StatusOK {
+		t.Fatalf("Could not get auth token, expected %d, got %d", http.StatusOK, verificationResp.StatusCode)
+	}
+	body, err := io.ReadAll(verificationResp.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var verificationRes auth.VerifyResponse
+	err = json.Unmarshal(body, &verificationRes)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if verificationRes.Token == "" {
+		t.Fatal("Empty token")
+	}
+
+	return verificationRes.Token
 }
